@@ -1,0 +1,135 @@
+---
+title: "An Analysis of the Effect of Transmission Type on the Fuel Consumption of Vehicles"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Abstract
+
+An analysis of the mtcars dataset is presented, in order to determine whether a manual or an automatic transmission would be better for a vehicle's miles per gallon (mpg) reading. While an initial analysis suggests that a manual transmission would be better, further linear models disprove this hypothesis. It will be shown that the transmission actually has a very minimal effect on the mpg reading, and that the weight of the vehicle, engine displacement and number of cylinders have a far greater effect. A new model is contructed that better explains the mpg variations, and this is confirmed by examining the residuals of the model.
+
+## Introduction
+
+With fuel consumption of vehicles being a concern for car owners, it is of interest to know what factors influence this. It is proposed that the type of tranmission - automatic or manual - that a vehicle has may affect the miles per gallon (mpg) reading that a vehicle has. This theory is put to the test and the results are discussed in this report. The chief questions to be answered are which transmission is better for mpg readings, and what is the quantifiable difference in mpg between the two transmission types.
+
+## Initial Exploratory Analysis
+
+The mtcars dataset is loaded into R and a boxplot is generated. This will clearly show the mpg ranges separated by their transmission types. It will also give a good first indication of the relationship between the two, if any exists.
+
+We can also generate a correlation table which will indicate how closely correlated all the variables in the dataset are with each other. In this case, the only row of interest is the first one, as this shows how each variable correlates individually with mpg.
+
+It is worth noting that the transmission type value has only two values - 0 and 1. The 0 identifies an automatic transmission, while the 1 identifies a manual transmission.
+
+The inital boxplot shows that the cars with a manual transmission have a higher range of mpg values, while those with an automatic transmission have lower mpg values. The mean value of the manual tranmssion fuel consumption is also higher than that of the automatic transmission fuel consumption. This would seem to indicate that a manual transmission would give a better mpg value, which would in turn result in better long-term fuel consumption. We will now develop a model to confirm or reject this hypothesis.
+
+For the relevant R code and plot, see Appendix section A.1.
+
+## Linear Modelling
+
+A simple linear model is fitted to the data, relating the mpg to the transmission type. The R squared value, which indicates how well the model fits the given data, is here calculated to be 0.3598. This can be interpreted as approximately 36 %. The implication of this is that only 36 % of the variation in the mpg value can be accounted for by the transmission type. This is important because there are other variables given in the mtcars dataset, such as weight and engine displacement, and these could also have an effect on the fuel consumption of the vehicle.
+
+Despite the low R squared value, the model does show that there is a quatifiable difference between the mpg values recorded for manual and automatic transmissions. In practical statistics terms, the difference is the difference in the mean values, which here is 7.124. However, this is only applicable for this specific model and does not provide any information as to which might be preferable.
+
+It is important to note that, given the number of variables in the available dataset, a large number of models can be constructed that could be used to show different effects on mpg. To identify which would be the best choices, we can refer back to the correlation table that was generated during the inital analysis of the data. This shows that the variables apart from transmission type that have the best correlation with mpg, indicated by the highest correlation co-efficients, are weight, displacement and number of cylinders. These three variable will therefore be used to build additional models for comparison purposes.
+
+When the R squared values of the above models are compared, it can be seen that the best fit is obtained by including all three other variables. This model produces an R squared value of 83 %. This implies that there is a compounding effect of all these variables on the fuel consumption of the vehicles under study.It also shows a greatly decreased quantifiable difference in the means for the manual and automatic transmission values - it is now 0.12.
+
+As an aside, it is interesting to note that, when looking at the individual effect of the new variables on mpg, the weight appears to have the biggest impact with an R squared value of 75 %.
+
+From this, we can conclude that, while there is an effect on the mpg reading of a vehicle based on whether it uses a manual or automatic transmission, that effect is not significant enough to identify which one is better. There are other factors that must be considered and therefore the relationship is not as simple as originally suggested by the exploratory analysis. We must therefore reject our initial hypothesis that a manual transmission is better than an automatic transmission.
+
+For the relevant R code and plot, see Appendix section A.2.
+
+## Residuals
+
+An investigation of the residuals of the best fit model will check whether or not it really is a good fit. The plots show that the residuals appear to be normally distributed, although there are a few outliers that might merit further investigation. Overall, this model can be concluded to be a better fit for the data.
+
+For the relevant R code and plot, see Appendix section A.3.
+
+## Conclusion
+
+The data from the mtcars dataset was analysed to identify which transmission type, manual or automatic, would result in a better miles per gallon reading. An initial exploratory analysis suggested that a manual transmission would be better, and that there was a quantifiable difference between the mpg readings of the different classes of vehicles. However when the data were modelled using a linear model, it was found the the transmission actually has a minimal effect on the mpg reading. Addional variables were included in the model in and effort to better model the effects. It was noted that the vehicle weight has the single biggest effect on mpg reading, while the best fit model was one that included weight, engine displacement and number of cyclinders. A further investigation of the residuals for this model confirmed this.
+
+\pagebreak
+
+## Appendix
+
+This section contains the R code, outputs and plots used for this analysis of the mtcars dataset.
+
+## A.1 - Inital Exploratory Analysis
+
+```{r inital, fig.width=5, fig.height=3, fig.align="center"}
+# load the necessary libraries
+library(datasets)
+library(ggplot2)
+
+# load the mtcars dataset and convert the numeric transmssion type variable to a factor
+data(mtcars)
+mtcars1 <- mtcars
+mtcars1$am <- factor(mtcars1$am, labels = c("Automatic", "Manual"))
+
+# calculate the mean of the mpg for each transmission type
+aggregate(mpg ~ am, data = mtcars1, mean)
+
+# plot a boxplot to get an initial idea of the ranges of the mpg values for 
+# each transmission type
+car_plot <- ggplot(data = mtcars1, aes(x=am, y=mpg)) + 
+            geom_boxplot(aes(fill = am)) + 
+            labs(x="Transmission Type", y="Miles per Gallon")
+car_plot
+```
+
+## A.2 - Linear Modelling
+
+```{r model01}
+# fit a simple linear model to the data
+fit01 <- lm(mpg ~ am, data = mtcars1)
+summary(fit01)
+```
+
+```{r correl}
+# generate the correlation co-efficients from the original data
+carsCorr <- cor(mtcars)
+round(carsCorr[1,],2)
+``` 
+
+```{r model02}
+# model including transmission and weight
+fit02 <- lm(mpg ~ am + wt, data = mtcars1)
+summary(fit02)
+# model including transmission, weight and displacement
+fit03 <- lm(mpg ~ am + wt + disp, data = mtcars1)
+summary(fit03)
+# model including transmission, weight, displacement and cylinders
+fit04 <- lm(mpg ~ am + wt + disp + cyl, data = mtcars1)
+summary(fit04)
+# model including transmission and displacement
+fit05 <- lm(mpg ~ am + disp, data = mtcars1)
+summary(fit05)
+# model including transmission, displacement and cylinders
+fit06 <- lm(mpg ~ am + disp + cyl, data = mtcars1)
+summary(fit06)
+# model including transmisison and cylinders
+fit07 <- lm(mpg ~ am + cyl, data = mtcars1)
+summary(fit07)
+# model including weight only
+fit08 <- lm(mpg ~ wt, data = mtcars1)
+summary(fit08)
+# model including displacement only
+fit09 <- lm(mpg ~ disp, data = mtcars1)
+summary(fit09)
+# model including cylinders only
+fit10 <- lm(mpg ~ cyl, data = mtcars1)
+summary(fit10)
+```
+
+## A.3 - Residuals
+
+``` {r resid, fig.width=6, fig.height=4, fig.align="center"}
+## plot the residuals of the best model
+par(mfrow = c(2,2))
+plot(fit04)
+```
